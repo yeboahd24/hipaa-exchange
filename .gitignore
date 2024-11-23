@@ -1,0 +1,30 @@
+# Environment variables
+.env
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Compiled binaries
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Dependency directories
+vendor/
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Certificate files
+*.pem
+*.key
+*.crt

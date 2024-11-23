@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIPAA Exchange Platform - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0284c7'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">HIPAA Exchange Platform</h1>
+        <h2 class="text-lg text-center text-gray-600 mb-6">Sign In</h2>
+
+        <div id="error-message" class="hidden mb-4 p-4 text-red-700 bg-red-100 rounded-lg"></div>
+
+        <form id="loginForm" class="space-y-4">
+            <div class="flex items-center mb-4">
+                <input type="checkbox" id="useEmail" name="useEmail" checked
+                    class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                <label for="useEmail" class="ml-2 text-sm font-medium text-gray-700">Login with Email</label>
+            </div>
+
+            <div id="emailField">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="email" name="email" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+            </div>
+
+            <div id="usernameField" class="hidden">
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="username" name="username"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+            </div>
+
+            <button type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                Sign In
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const useEmailCheckbox = document.getElementById('useEmail');
+            const emailField = document.getElementById('emailField');
+            const usernameField = document.getElementById('usernameField');
+            const errorMessage = document.getElementById('error-message');
+
+            useEmailCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    emailField.classList.remove('hidden');
+                    usernameField.classList.add('hidden');
+                    document.getElementById('email').required = true;
+                    document.getElementById('username').required = false;
+                } else {
+                    emailField.classList.add('hidden');
+                    usernameField.classList.remove('hidden');
+                    document.getElementById('email').required = false;
+                    document.getElementById('username').required = true;
+                }
+            });
+
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const useEmail = useEmailCheckbox.checked;
+                const email = document.getElementById('email').value;
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                const endpoint = useEmail ? '/auth/login/email' : '/auth/login';
+                const payload = useEmail 
+                    ? { email, password }
+                    : { username, password };
+
+                try {
+                    errorMessage.classList.add('hidden');
+                    const response = await fetch('/api' + endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Login failed');
+                    }
+
+                    const data = await response.json();
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
+                        window.location.href = '/';
+                    } else {
+                        throw new Error('No token received');
+                    }
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
